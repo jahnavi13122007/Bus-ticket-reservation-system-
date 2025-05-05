@@ -1,0 +1,131 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_SEATS 40
+
+typedef struct Booking {
+    int seatNumber;
+    char name[50];
+    struct Booking* next;
+} Booking;
+
+int seats[MAX_SEATS] = {0}; // All seats are initially available
+Booking* head = NULL;
+
+// Function to display seat availability
+void displaySeats() {
+    printf("Seat Status (0: available, 1: booked):\n");
+    for (int i = 0; i < MAX_SEATS; i++) {
+        printf("Seat %2d: %d\n", i + 1, seats[i]);
+    }
+}
+
+// Function to book a seat
+void bookSeat() {
+    int seat;
+    char name[50];
+    printf("Enter seat number (1-%d): ", MAX_SEATS);
+    scanf("%d", &seat);
+
+    if (seat < 1 || seat > MAX_SEATS) {
+        printf("Invalid seat number.\n");
+        return;
+    }
+
+    if (seats[seat - 1] == 1) {
+        printf("Seat already booked.\n");
+        return;
+    }
+
+    printf("Enter passenger name: ");
+    scanf(" %[^\n]", name); // Read name with spaces
+
+    // Book the seat
+    seats[seat - 1] = 1;
+
+    Booking* newBooking = (Booking*)malloc(sizeof(Booking));
+    newBooking->seatNumber = seat;
+    strcpy(newBooking->name, name);
+    newBooking->next = head;
+    head = newBooking;
+
+    printf("Booking successful for %s (Seat %d)\n", name, seat);
+}
+
+// Function to cancel a booking
+void cancelBooking() {
+    int seat;
+    printf("Enter seat number to cancel: ");
+    scanf("%d", &seat);
+
+    if (seat < 1 || seat > MAX_SEATS || seats[seat - 1] == 0) {
+        printf("Invalid or unbooked seat number.\n");
+        return;
+    }
+
+    Booking *temp = head, *prev = NULL;
+
+    while (temp != NULL && temp->seatNumber != seat) {
+        prev = temp;
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        printf("Booking not found.\n");
+        return;
+    }
+
+    // Remove from linked list
+    if (prev == NULL) {
+        head = temp->next;
+    } else {
+        prev->next = temp->next;
+    }
+
+    free(temp);
+    seats[seat - 1] = 0;
+
+    printf("Booking for seat %d cancelled.\n", seat);
+}
+
+// Function to display all bookings
+void displayBookings() {
+    Booking* temp = head;
+
+    if (!temp) {
+        printf("No bookings made yet.\n");
+        return;
+    }
+
+    printf("List of Bookings:\n");
+    while (temp) {
+        printf("Seat %d - %s\n", temp->seatNumber, temp->name);
+        temp = temp->next;
+    }
+}
+
+int main() {
+    int choice;
+    do {
+        printf("\n--- Bus Ticket Reservation System ---\n");
+        printf("1. View Seats\n");
+        printf("2. Book Seat\n");
+        printf("3. Cancel Booking\n");
+        printf("4. View All Bookings\n");
+        printf("5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch(choice) {
+            case 1: displaySeats(); break;
+            case 2: bookSeat(); break;
+            case 3: cancelBooking(); break;
+            case 4: displayBookings(); break;
+            case 5: printf("Exiting...\n"); break;
+            default: printf("Invalid choice.\n");
+        }
+    } while(choice != 5);
+
+    return 0;
+}
